@@ -71,7 +71,7 @@ groups:
               net: 02.0001.0101.7523.2000.00
           bundle_interfaces:
             - bundle_id: 2
-              description: CONNECTED TO WCR01.FLTO3 BUNDLE 2
+              description: CONNECTED TO WCR01.FN BUNDLE 2
               ipv4_address: 10.175.233.28/31
               ipv6_address: 2607:f798:3::28/127
               router_isis: true
@@ -79,7 +79,7 @@ groups:
                 - FourHundredGigE0/0/0/2
                 - FourHundredGigE0/1/0/2
             - bundle_id: 3
-              description: CONNECTED TO WCR01.FLBR1 BUNDLE 3
+              description: CONNECTED TO WCR01.FO BUNDLE 3
               ipv4_address: 10.175.233.19/31
               ipv6_address: 2607:f798:3::1f/127
               router_isis: true
@@ -126,7 +126,7 @@ groups:
               net: 02.0001.0101.7523.2001.00
           bundle_interfaces:
             - bundle_id: 2
-              description: CONNECTED TO WCR01.FLBR1 BE 2
+              description: CONNECTED TO WCR01.FO BE 2
               ipv4_address: 10.175.233.0/31
               ipv6_address: 2607:f798:3::c/127
               router_isis: true
@@ -140,7 +140,7 @@ groups:
               member_interfaces:
                 - HundredGigE0/0/0/3
             - bundle_id: 4
-              description: CONNECTED TO WCR01.FLOT3 BUNDLE 4
+              description: CONNECTED TO WCR01.FZ BUNDLE 4
               ipv4_address: 10.175.233.2/31
               ipv6_address: 2607:f798:3::e/127
               router_isis: true
@@ -153,111 +153,7 @@ groups:
               router_isis: true
               member_interfaces:
                 - HundredGigE0/0/0/4
-
-      - name: WCR01.FLTO3
-        vars:
-          bfd:
-            multipath_lcs:
-              - 0/0/CPU0
-          management_oob:
-            vip_ipv4_address: 192.168.250.4/24
-            default_gateway_ipv4_address: 192.168.250.1
-            interfaces:
-              - name: MgmtEth0/RP0/CPU0/0
-                ipv4_address: 192.168.250.5/24
-              - name: MgmtEth0/RP1/CPU0/0
-                ipv4_address: 192.168.250.6/24
-          routing_igp:
-            loopback_0:
-              ipv4_address: 10.175.232.2/32
-              ipv6_address: 2607:f798:3:aaaa::2/128
-              prefix_sid: 2
-            isis:
-              process_id: "1"
-              net: 02.0001.0101.7523.2002.00
-          bundle_interfaces:
-            - bundle_id: 2
-              description: CONNECTED TO WCR01.FL BUNDLE 2
-              ipv4_address: 10.175.233.29/31
-              ipv6_address: 2607:f798:3::29/127
-              router_isis: true
-              member_interfaces:
-                - FourHundredGigE0/0/0/2
-                - FourHundredGigE0/0/0/5
-            - bundle_id: 3
-              description: CONNECTED TO WIR01.FM BUNDLE 3
-              ipv4_address: 10.175.233.32/31
-              ipv6_address: 2607:f798:3::2c/127
-              router_isis: true
-              member_interfaces:
-                - HundredGigE0/0/0/1
-            - bundle_id: 4
-              description: CONNECTED TO WCR01.FM BE 4
-              ipv4_address: 10.175.233.3/31
-              ipv6_address: 2607:f798:3::f/127
-              router_isis: true
-              member_interfaces:
-                - HundredGigE0/0/0/0
-            - bundle_id: 5
-              description: CONNECTED TO WBR02.FM BUNDLE 5
-              ipv4_address: 10.175.233.34/31
-              ipv6_address: 2607:f798:3::2e/127
-              router_isis: true
-              member_interfaces:
-                - HundredGigE0/0/0/3
-
-      - name: WCR01.FLBR1
-        vars:
-          bfd:
-            multipath_lcs:
-              - 0/0/CPU0
-          management_oob:
-            vip_ipv4_address: 192.168.250.13/24
-            default_gateway_ipv4_address: 192.168.250.1
-            interfaces:
-              - name: MgmtEth0/RP0/CPU0/0
-                ipv4_address: 192.168.250.14/24
-              - name: MgmtEth0/RP1/CPU0/0
-                ipv4_address: 192.168.250.15/24
-          routing_igp:
-            loopback_0:
-              ipv4_address: 10.175.232.3/32
-              ipv6_address: 2607:f798:3:aaaa::3/128
-              prefix_sid: 3
-            isis:
-              process_id: "1"
-              net: 02.0001.0101.7523.2003.00
-          bundle_interfaces:
-            - bundle_id: 2
-              description: CONNECTED TO WCR01.FM BE 2
-              ipv4_address: 10.175.233.1/31
-              ipv6_address: 2607:f798:3::d/127
-              router_isis: true
-              member_interfaces:
-                - HundredGigE0/0/0/0
-            - bundle_id: 3
-              description: CONNECTED TO WCR01.FL BUNDLE 3
-              ipv4_address: 10.175.233.18/31
-              ipv6_address: 2607:f798:3::1e/127
-              router_isis: true
-              member_interfaces:
-                - HundredGigE0/0/0/4
-                - HundredGigE0/0/0/7
-            - bundle_id: 4
-              description: CONNECTED TO WIR01.FL BE 4
-              ipv4_address: 10.175.233.12/31
-              ipv6_address: 2607:f798:3::18/127
-              router_isis: true
-              member_interfaces:
-                - HundredGigE0/0/0/1
-            - bundle_id: 5
-              description: Connected to WBR02.FL BE 5
-              ipv4_address: 10.175.233.14/31
-              ipv6_address: 2607:f798:3::5f/127
-              router_isis: true
-              member_interfaces:
-                - HundredGigE0/0/0/10
-
+                
   - name: WBR
     devices:
       - name: WBR01.FL
@@ -299,28 +195,28 @@ groups:
                 neighbor_group: PCE
             ipv4_ebgp_peers:
               - ipv4_address: 10.175.233.79
-                description: "DCGW60.FL GRT"
-                remote_as: 4264830002
+                description: "GW60.FL GRT"
+                remote_as: 3
                 route_policy_in: PASS-AL
-                route_policy_out: WBR_DCGW_GRT_OUTGOING
+                route_policy_out: WBR_GW_GRT_OUTGOING
               - ipv4_address: 10.175.233.194
-                description: "DCGW61.FL GRT"
-                remote_as: 4264830002
+                description: "GW61.FL GRT"
+                remote_as: 3
                 route_policy_in: PASS-ALL
-                route_policy_out: WBR_DCGW_GRT_OUTGOING
+                route_policy_out: WBR_GW_GRT_OUTGOING
             vrfs:
               - name: SIGTRAN
                 rd: "10.175.232.4:8"
                 ipv4_ebgp_peers:
                   - ipv4_address: 150.0.0.167
-                    description: "to_NXOS_overIPRAN"
-                    remote_as: 4264830004
+                    description: "to_NXOS_overAN"
+                    remote_as: 2
                     route_policy_in: from_IXIA_set_comm
                     route_policy_out: PASS-ALL
                 ipv6_ebgp_peers:
                   - ipv6_address: 2607:f798:3::b
-                    description: "to_NXOS_overIPRAN"
-                    remote_as: 4264830004
+                    description: "to_NXOS_overAN"
+                    remote_as: 2
                     route_policy_in: from_IXIA_set_comm
                     route_policy_out: PASS-ALL
               - name: Internet
@@ -328,92 +224,82 @@ groups:
                 ipv4_ebgp_peers:
                   - ipv4_address: 151.0.0.167
                     description: "NXOS Internet Client"
-                    remote_as: 4264830004
+                    remote_as: 2
                     route_policy_in: PASS-ALL
                     route_policy_out: PASS-ALL
                   - ipv4_address: 10.175.234.2
-                    description: "DCGW60.FL INTERNET"
-                    remote_as: 4264830002
-                    route_policy_in: WBR_DCGW_Internet_INCOMING
+                    description: "GW60.FL INTERNET"
+                    remote_as: 3
+                    route_policy_in: WBR_GW_Internet_INCOMING
                     route_policy_out: DefaultOnly_WITH_MED
                   - ipv4_address: 10.175.234.52
-                    description: "DCGW61.FL INTERNET"
-                    remote_as: 4264830002
-                    route_policy_in: WBR_DCGW_Internet_INCOMING
+                    description: "GW61.FL INTERNET"
+                    remote_as: 3
+                    route_policy_in: WBR_GW_Internet_INCOMING
                     route_policy_out: DefaultOnly_WITH_MED
                   - ipv4_address: 10.175.233.72
                     description: "BR01.FL"
-                    remote_as: 64812
+                    remote_as: 4
                     route_policy_in: WBR_BR_Internet_INCOMING
                     route_policy_out: WBR_BR_Internet_OUTGOING
                   - ipv4_address: 10.176.233.72
                     description: "BR01.FL TEMP"
-                    remote_as: 64812
+                    remote_as: 4
                     route_policy_in: WBR_BR_Internet_INCOMING
                     route_policy_out: WBR_BR_Internet_OUTGOING
                 ipv6_ebgp_peers:
                   - ipv6_address: 2607:f798:3::4
-                    description: "DCGW60.FL_INTERNET_IPV6"
-                    remote_as: 4264830002
-                    route_policy_in: WBR_DCGW_Internet_INCOMING
+                    description: "GW60.FL_INTERNET_IPV6"
+                    remote_as: 3
+                    route_policy_in: WBR_GW_Internet_INCOMING
                     route_policy_out: DefaultOnly_WITH_MED
                   - ipv6_address: 2607:f798:3::9
                     description: "BR01.FLBAS_IPV6"
-                    remote_as: 64812
-                    route_policy_in: WBR_DCGW_Internet_INCOMING
+                    remote_as: 4
+                    route_policy_in: WBR_GW_Internet_INCOMING
                     route_policy_out: DefaultOnly_WITH_MED
                   - ipv6_address: 2607:f798:4::9
                     description: "BR02.FLBAS_IPV6"
-                    remote_as: 64812
-                    route_policy_in: WBR_DCGW_Internet_INCOMING
+                    remote_as: 4
+                    route_policy_in: WBR_GW_Internet_INCOMING
                     route_policy_out: DefaultOnly_WITH_MED
-              - name: infra-vrf
-                rd: "10.175.232.4:4"
-                ipv4_ebgp_peers:
-                  - ipv4_address: 10.175.233.115
-                    description: "MDCI01.MTFL"
-                    remote_as: 4264800721
-                    route_policy_in: PASS-ALL
-                    route_policy_out: PASS-ALL
               - name: SIP_PEERING
                 rd: "10.175.232.4:5"
                 ipv4_ebgp_peers:
                   - ipv4_address: 10.175.234.64
-                    description: "DCGW60.FL"
-                    remote_as: 4264830002
-                    route_policy_in: WBR_DCGW_SIP_INCOMING
+                    description: "GW60.FL"
+                    remote_as: 3
+                    route_policy_in: WBR_GW_SIP_INCOMING
                     route_policy_out: SET_MED_IGP_METRIC
                   - ipv4_address: 10.175.234.70
-                    description: "DCGW61.FL"
-                    remote_as: 4264830002
-                    route_policy_in: WBR_DCGW_SIP_INCOMING
+                    description: "GW61.FL"
+                    remote_as: 3
+                    route_policy_in: WBR_GW_SIP_INCOMING
                     route_policy_out: SET_MED_IGP_METRIC
                 ipv6_ebgp_peers:
                   - ipv6_address: 2607:f798:3::b8
-                    description: "DCGW61.FL"
-                    remote_as: 4264830002
-                    route_policy_in: WBR_DCGW_SIP_INCOMING
+                    description: "GW61.FL"
+                    remote_as: 3
+                    route_policy_in: WBR_GW_SIP_INCOMING
                     route_policy_out: SET_MED_IGP_METRIC
                   - ipv6_address: 2607:f798:3::d0
-                    description: "DCGW60.FL"
-                    remote_as: 4264830002
-                    route_policy_in: WBR_DCGW_SIP_INCOMING
+                    description: "GW60.FL"
+                    remote_as: 3
+                    route_policy_in: WBR_GW_SIP_INCOMING
                     route_policy_out: SET_MED_IGP_METRIC
               - name: VRF_ROAMING
                 rd: "10.175.232.4:3"
                 bgp_pic: true
                 ipv4_ebgp_peers:
-                  #- ipv4_address: 160.102.0.0
-                  #  neighbor_group: IXIA
                   - ipv4_address: 10.175.234.41
                     description: "BR01.FL"
-                    remote_as:  64812
+                    remote_as:  4
                     route_policy_in: WBR_BR_ROAMING_INCOMING
                     route_policy_out: PASS-ALL
                 ipv6_ebgp_peers:
                   - ipv6_address: 2607:f798:3::78
                     description: "BR01.FL"
-                    remote_as: 64812
+                    remote_as: 4
                     route_policy_in: WBR_BR_ROAMING_INCOMING
                     route_policy_out: PASS-ALL
           bundle_interfaces:
@@ -462,17 +348,17 @@ groups:
               member_interfaces:
                 - TenGigE0/0/0/30
             - bundle_id: 10
-              description: CONNECTED TO DCGW60.FL
+              description: CONNECTED TO GW60.FL
               member_interfaces:
                 - HundredGigE0/0/0/42
                 - HundredGigE0/1/0/42
               sub_interfaces:
                 - sub_interface_id: 1
-                  description: CONNECTED TO DCGW60.FL BE10.1 VPNV4
+                  description: CONNECTED TO GW60.FL BE10.1 VPNV4
                   ipv4_address: 10.175.233.78/31
                   ipv6_address: 2607:f798:3::58/127
                 - sub_interface_id: 2
-                  description: CONNECTED TO DCGW60.FL BE10.2 vrf Internet
+                  description: CONNECTED TO GW60.FL BE10.2 vrf Internet
                   vrf: Internet
                   ipv4_address: 10.175.234.3/31
                   ipv6_address: 2607:f798:3::5/127
@@ -516,33 +402,33 @@ groups:
                 neighbor_group: PCE
             ipv4_ebgp_peers:
               - ipv4_address: 10.175.233.93
-                description: "DCGW61.FL GRT"
-                remote_as: 4264830002
+                description: "GW61.FL GRT"
+                remote_as: 3
                 route_policy_in: PASS-AL
-                route_policy_out: WBR_DCGW_GRT_OUTGOING
+                route_policy_out: WBR_GW_GRT_OUTGOING
               - ipv4_address: 10.175.233.196
-                description: "DCGW60.FL GRT"
-                remote_as: 4264830002
+                description: "GW60.FL GRT"
+                remote_as: 3
                 route_policy_in: PASS-ALL
-                route_policy_out: WBR_DCGW_GRT_OUTGOING
+                route_policy_out: WBR_GW_GRT_OUTGOING
             vrfs:
               - name: SIGTRAN
                 rd: "10.175.232.5:8"
                 ipv4_ebgp_peers:
                   - ipv4_address: 150.1.0.171
-                    description: "to_NXOS_overIPRAN"
-                    remote_as: 4264830004
+                    description: "to_NXOS_overAN"
+                    remote_as: 2
                     route_policy_in: from_IXIA_set_comm
                     route_policy_out: PASS-ALL
                   - ipv4_address: 10.175.233.171
-                    description: "to_NXOS_overIPRAN"
-                    remote_as: 4264830004
+                    description: "to_NXOS_overAN"
+                    remote_as: 2
                     route_policy_in: from_IXIA_set_comm
                     route_policy_out: PASS-ALL
                 ipv6_ebgp_peers:
                   - ipv6_address: fd00:150::3
-                    description: "to_NXOS_overIPRAN"
-                    remote_as: 4264830004
+                    description: "to_NXOS_overAN"
+                    remote_as: 2
                     route_policy_in: from_IXIA_set_comm
                     route_policy_out: PASS-ALL
               - name: Internet
@@ -550,102 +436,92 @@ groups:
                 ipv4_ebgp_peers:
                   - ipv4_address: 20.20.20.2
                     description: "IXIA BGP 1"
-                    remote_as: 4264830004
+                    remote_as: 2
                     route_policy_in: DefaultOnlyV4
                     route_policy_out: PASS-ALL
                   - ipv4_address: 20.20.20.3
                     description: "IXIA BGP 2"
-                    remote_as: 4264830004
+                    remote_as: 2
                     route_policy_in: DefaultOnlyV4
                     route_policy_out: PASS-ALL
                   - ipv4_address: 151.1.0.171
                     description: "NXOS Internet Client"
-                    remote_as: 4264830004
+                    remote_as: 2
                     route_policy_in: PASS-ALL
                     route_policy_out: PASS-ALL
                   - ipv4_address: 10.175.234.10
-                    description: "DCGW61.FL INTERNET"
-                    remote_as: 4264830002
-                    route_policy_in: WBR_DCGW_Internet_INCOMING
+                    description: "GW61.FL INTERNET"
+                    remote_as: 3
+                    route_policy_in: WBR_GW_Internet_INCOMING
                     route_policy_out: DefaultOnly_WITH_MED
                   - ipv4_address: 10.175.234.54
-                    description: "DCGW60.FL INTERNET"
-                    remote_as: 4264830002
-                    route_policy_in: WBR_DCGW_Internet_INCOMING
+                    description: "GW60.FL INTERNET"
+                    remote_as: 3
+                    route_policy_in: WBR_GW_Internet_INCOMING
                     route_policy_out: DefaultOnly_WITH_MED
                   - ipv4_address: 10.175.233.83
                     description: "BR02.FL"
-                    remote_as: 64812
+                    remote_as: 4
                     route_policy_in: WBR_BR_Internet_INCOMING
                     route_policy_out: WBR_BR_Internet_OUTGOING
                   - ipv4_address: 10.176.233.83
                     description: "BR02.FL TEMP"
-                    remote_as: 64812
+                    remote_as: 4
                     route_policy_in: WBR_BR_Internet_INCOMING
                     route_policy_out: WBR_BR_Internet_OUTGOING
                 ipv6_ebgp_peers:
                   - ipv6_address: 2607:f798:3::6d
-                    description: "DCGW60.FL_INTERNET_IPV6"
-                    remote_as: 4264830002
-                    route_policy_in: WBR_DCGW_Internet_INCOMING
+                    description: "GW60.FL_INTERNET_IPV6"
+                    remote_as: 3
+                    route_policy_in: WBR_GW_Internet_INCOMING
                     route_policy_out: DefaultOnly_WITH_MED
                   - ipv6_address: 2607:f798:3::63
                     description: "BR02.FLBAS_IPV6"
-                    remote_as: 64812
-                    route_policy_in: WBR_DCGW_Internet_INCOMING
+                    remote_as: 4
+                    route_policy_in: WBR_GW_Internet_INCOMING
                     route_policy_out: DefaultOnly_WITH_MED
                   - ipv6_address: 2607:f798:4::63
                     description: "BR01.FLBAS_IPV6"
-                    remote_as: 64812
-                    route_policy_in: WBR_DCGW_Internet_INCOMING
+                    remote_as: 4
+                    route_policy_in: WBR_GW_Internet_INCOMING
                     route_policy_out: DefaultOnly_WITH_MED
-              - name: infra-vrf
-                rd: "10.175.232.5:2"
-                ipv4_ebgp_peers:
-                  - ipv4_address: 10.175.233.117
-                    description: "MDCI02.MTFL"
-                    remote_as: 4264800721
-                    route_policy_in: PASS-ALL
-                    route_policy_out: PASS-ALL
               - name: SIP_PEERING
                 rd: "10.175.232.5:4"
                 ipv4_ebgp_peers:
                   - ipv4_address: 10.175.234.66
-                    description: "DCGW60.FL"
-                    remote_as: 4264830002
-                    route_policy_in: WBR_DCGW_SIP_INCOMING
+                    description: "GW60.FL"
+                    remote_as: 3
+                    route_policy_in: WBR_GW_SIP_INCOMING
                     route_policy_out: SET_MED_IGP_METRIC
                   - ipv4_address: 10.175.234.68
-                    description: "DCGW61.FL"
-                    remote_as: 4264830002
-                    route_policy_in: WBR_DCGW_SIP_INCOMING
+                    description: "GW61.FL"
+                    remote_as: 3
+                    route_policy_in: WBR_GW_SIP_INCOMING
                     route_policy_out: SET_MED_IGP_METRIC
                 ipv6_ebgp_peers:
                   - ipv6_address: 2607:f798:3::b6
-                    description: "DCGW60.FL"
-                    remote_as: 4264830002
-                    route_policy_in: WBR_DCGW_SIP_INCOMING
+                    description: "GW60.FL"
+                    remote_as: 3
+                    route_policy_in: WBR_GW_SIP_INCOMING
                     route_policy_out: SET_MED_IGP_METRIC
                   - ipv6_address: 2607:f798:3::d2
-                    description: "DCGW61.FL"
-                    remote_as: 4264830002
-                    route_policy_in: WBR_DCGW_SIP_INCOMING
+                    description: "GW61.FL"
+                    remote_as: 3
+                    route_policy_in: WBR_GW_SIP_INCOMING
                     route_policy_out: SET_MED_IGP_METRIC
               - name: VRF_ROAMING
                 rd: "10.175.232.5:3"
                 bgp_pic: true
                 ipv4_ebgp_peers:
-                  #- ipv4_address: 160.103.0.2
-                  #  neighbor_group: IXIA
                   - ipv4_address: 10.175.234.42
                     description: "BR02.FL"
-                    remote_as: 64812
+                    remote_as: 4
                     route_policy_in: WBR_BR_ROAMING_INCOMING
                     route_policy_out: PASS-ALL
                 ipv6_ebgp_peers:
                   - ipv6_address: 2607:f798:3::61
                     description: "BR02.FL"
-                    remote_as: 64812
+                    remote_as: 4
                     route_policy_in: WBR_BR_ROAMING_INCOMING
                     route_policy_out: PASS-ALL
           bundle_interfaces:
@@ -672,7 +548,7 @@ groups:
               member_interfaces:
                 - HundredGigE0/0/0/40
             - bundle_id: 5
-              description: CONNECTED TO WCR01.FLBR1 BUNDLE 5
+              description: CONNECTED TO WCR01.FO BUNDLE 5
               ipv4_address: 10.175.233.15/31
               ipv6_address: 2607:f798:3::5e/127
               router_isis: true
@@ -693,17 +569,17 @@ groups:
               member_interfaces:
                 - TenGigE0/0/0/30
             - bundle_id: 10
-              description: CONNECTED TO DCGW61.FL
+              description: CONNECTED TO GW61.FL
               member_interfaces:
                 - HundredGigE0/0/0/41
                 - HundredGigE0/1/0/41
               sub_interfaces:
                 - sub_interface_id: 1
-                  description: CONNECTED TO DCGW61.FL BE10.1 VPNV4
+                  description: CONNECTED TO GW61.FL BE10.1 VPNV4
                   ipv4_address: 10.175.233.92/31
                   ipv6_address: 2607:f798:3::6a/127
                 - sub_interface_id: 2
-                  description: CONNECTED TO DCGW61.FL BE10.2 vrf Internet
+                  description: CONNECTED TO GW61.FL BE10.2 vrf Internet
                   vrf: Internet
                   ipv4_address: 10.175.234.11/31
                   ipv6_address: 2607:f798:3::6c/127
@@ -747,82 +623,82 @@ groups:
                 neighbor_group: PCE
             ipv4_ebgp_peers:
               - ipv4_address: 10.175.233.49
-                description: "DCGW60.FM GRT"
-                remote_as: 4264830003
+                description: "GW60.FM GRT"
+                remote_as: 5
                 route_policy_in: PASS-AL
-                route_policy_out: WBR_DCGW_GRT_OUTGOING
+                route_policy_out: WBR_GW_GRT_OUTGOING
               - ipv4_address: 10.175.233.192
-                description: "DCGW61.FM GRT"
-                remote_as: 4264830003
+                description: "GW61.FM GRT"
+                remote_as: 5
                 route_policy_in: PASS-ALL
-                route_policy_out: WBR_DCGW_GRT_OUTGOING
+                route_policy_out: WBR_GW_GRT_OUTGOING
             vrfs:
               - name: SIGTRAN
                 rd: "10.175.232.6:8"
                 ipv4_ebgp_peers:
                   - ipv4_address: 10.175.233.173
-                    description: "to_NXOS_overIPRAN"
-                    remote_as: 4264830004
+                    description: "to_NXOS_overAN"
+                    remote_as: 2
                     route_policy_in: from_IXIA_set_comm
                     route_policy_out: PASS-ALL
                 ipv6_ebgp_peers:
                   - ipv6_address: fd00:150::5
-                    description: "to_NXOS_overIPRAN"
-                    remote_as: 4264830004
+                    description: "to_NXOS_overAN"
+                    remote_as: 2
                     route_policy_in: from_IXIA_set_comm
                     route_policy_out: PASS-ALL
               - name: Internet
                 rd: "10.175.232.6:6"
                 ipv4_ebgp_peers:
                   - ipv4_address: 10.175.234.6
-                    description: "DCGW60.FM INTERNET"
-                    remote_as: 4264830003
-                    route_policy_in: WBR_DCGW_Internet_INCOMING
+                    description: "GW60.FM INTERNET"
+                    remote_as: 5
+                    route_policy_in: WBR_GW_Internet_INCOMING
                     route_policy_out: DefaultOnly_WITH_MED
                   - ipv4_address: 10.175.234.50
-                    description: "DCGW61.FL INTERNET"
-                    remote_as: 4264830003
-                    route_policy_in: WBR_DCGW_Internet_INCOMING
+                    description: "GW61.FL INTERNET"
+                    remote_as: 5
+                    route_policy_in: WBR_GW_Internet_INCOMING
                     route_policy_out: DefaultOnly_WITH_MED
                   - ipv4_address: 10.175.233.43
                     description: "BR01.FM"
-                    remote_as: 64812
+                    remote_as: 4
                     route_policy_in: WBR_BR_Internet_INCOMING
                     route_policy_out: WBR_BR_Internet_OUTGOING
                 ipv6_ebgp_peers:
                   - ipv6_address: 2607:f798:3::3d
-                    description: "DCGW60.FM_INTERNET_IPV6"
-                    remote_as: 4264830003
-                    route_policy_in: WBR_DCGW_Internet_INCOMING
+                    description: "GW60.FM_INTERNET_IPV6"
+                    remote_as: 5
+                    route_policy_in: WBR_GW_Internet_INCOMING
                     route_policy_out: DefaultOnly_WITH_MED
                   - ipv6_address: 2607:f798:3::37
                     description: "BR01.FM_IPV6"
-                    remote_as: 64812
-                    route_policy_in: WBR_DCGW_Internet_INCOMING
+                    remote_as: 4
+                    route_policy_in: WBR_GW_Internet_INCOMING
                     route_policy_out: DefaultOnly_WITH_MED
               - name: SIP_PEERING
                 rd: "10.175.232.6:5"
                 ipv4_ebgp_peers:
                   - ipv4_address: 10.175.234.72
-                    description: "DCGW60.FM"
-                    remote_as: 4264830003
-                    route_policy_in: WBR_DCGW_SIP_INCOMING
+                    description: "GW60.FM"
+                    remote_as: 5
+                    route_policy_in: WBR_GW_SIP_INCOMING
                     route_policy_out: SET_MED_IGP_METRIC
                   - ipv4_address: 10.175.234.76
-                    description: "DCGW61.FM"
-                    remote_as: 4264830002
-                    route_policy_in: WBR_DCGW_SIP_INCOMING
+                    description: "GW61.FM"
+                    remote_as: 3
+                    route_policy_in: WBR_GW_SIP_INCOMING
                     route_policy_out: SET_MED_IGP_METRIC
                 ipv6_ebgp_peers:
                   - ipv6_address: 2607:f798:3::d4
-                    description: "DCGW61.FM"
-                    remote_as: 4264830003
-                    route_policy_in: WBR_DCGW_SIP_INCOMING
+                    description: "GW61.FM"
+                    remote_as: 5
+                    route_policy_in: WBR_GW_SIP_INCOMING
                     route_policy_out: SET_MED_IGP_METRIC
                   - ipv6_address: 2607:f798:3::e2
-                    description: "DCGW60.FM"
-                    remote_as: 4264830003
-                    route_policy_in: WBR_DCGW_SIP_INCOMING
+                    description: "GW60.FM"
+                    remote_as: 5
+                    route_policy_in: WBR_GW_SIP_INCOMING
                     route_policy_out: SET_MED_IGP_METRIC
               - name: VRF_ROAMING
                 rd: "10.175.232.6:3"
@@ -830,7 +706,7 @@ groups:
                 ipv4_ebgp_peers:
                   - ipv4_address: 10.175.234.45
                     description: "BR01.FM"
-                    remote_as: 64812
+                    remote_as: 4
                     route_policy_in: WBR_BR_ROAMING_INCOMING
                     route_policy_out: PASS-ALL
           bundle_interfaces:
@@ -878,16 +754,16 @@ groups:
               member_interfaces:
                 - TenGigE0/0/0/30
             - bundle_id: 10
-              description: CONNECTED TO DCGW60.FM BE10
+              description: CONNECTED TO GW60.FM BE10
               member_interfaces:
                 - HundredGigE0/1/0/41
               sub_interfaces:
                 - sub_interface_id: 1
-                  description: CONNECTED TO DCGW60.FM BE10.1 VPNV4
+                  description: CONNECTED TO GW60.FM BE10.1 VPNV4
                   ipv4_address: 10.175.233.48/31
                   ipv6_address: 2607:f798:3::3a/127
                 - sub_interface_id: 2
-                  description: CONNECTED TO DCGW60.FM BE10.2 vrf Internet
+                  description: CONNECTED TO GW60.FM BE10.2 vrf Internet
                   vrf: Internet
                   ipv4_address: 10.175.234.7/31
                   ipv6_address: 2607:f798:3::3c/127
@@ -931,28 +807,28 @@ groups:
                 neighbor_group: PCE
             ipv4_ebgp_peers:
               - ipv4_address: 10.175.233.63
-                description: "DCGW61.FM GRT"
-                remote_as: 4264830003
+                description: "GW61.FM GRT"
+                remote_as: 5
                 route_policy_in: PASS-AL
-                route_policy_out: WBR_DCGW_GRT_OUTGOING
+                route_policy_out: WBR_GW_GRT_OUTGOING
               - ipv4_address: 10.175.233.190
-                description: "DCGW60.FM GRT"
-                remote_as: 4264830003
+                description: "GW60.FM GRT"
+                remote_as: 5
                 route_policy_in: PASS-ALL
-                route_policy_out: WBR_DCGW_GRT_OUTGOING
+                route_policy_out: WBR_GW_GRT_OUTGOING
             vrfs:
               - name: SIGTRAN
                 rd: "10.175.232.7:8"
                 ipv4_ebgp_peers:
                   - ipv4_address: 10.175.233.175
-                    description: "to_NXOS_overIPRAN"
-                    remote_as: 4264830004
+                    description: "to_NXOS_overAN"
+                    remote_as: 2
                     route_policy_in: from_IXIA_set_comm
                     route_policy_out: PASS-ALL
                 ipv6_ebgp_peers:
                   - ipv6_address: fd00:150::7
-                    description: "to_NXOS_overIPRAN"
-                    remote_as: 4264830004
+                    description: "to_NXOS_overAN"
+                    remote_as: 2
                     route_policy_in: from_IXIA_set_comm
                     route_policy_out: PASS-ALL
               - name: Internet
@@ -960,58 +836,58 @@ groups:
                 ipv4_ebgp_peers:
                   - ipv4_address: 30.30.30.2
                     description: "IXIA BGP"
-                    remote_as: 65401
+                    remote_as: 6
                     route_policy_in: DefaultOnlyV4
                     route_policy_out: PASS-ALL
                   - ipv4_address: 10.175.234.14
-                    description: "DCGW61.FM INTERNET"
-                    remote_as: 4264830003
-                    route_policy_in: WBR_DCGW_Internet_INCOMING
+                    description: "GW61.FM INTERNET"
+                    remote_as: 5
+                    route_policy_in: WBR_GW_Internet_INCOMING
                     route_policy_out: DefaultOnly_WITH_MED
                   - ipv4_address: 10.175.234.48
-                    description: "DCGW60.FM INTERNET"
-                    remote_as: 4264830003
-                    route_policy_in: WBR_DCGW_Internet_INCOMING
+                    description: "GW60.FM INTERNET"
+                    remote_as: 5
+                    route_policy_in: WBR_GW_Internet_INCOMING
                     route_policy_out: DefaultOnly_WITH_MED
                   - ipv4_address: 10.175.233.65
                     description: "BR02.FM"
-                    remote_as: 64812
+                    remote_as: 4
                     route_policy_in: WBR_BR_Internet_INCOMING
                     route_policy_out: WBR_BR_Internet_OUTGOING
                 ipv6_ebgp_peers:
                   - ipv6_address: 2607:f798:3::4d
-                    description: "DCGW61.FM_INTERNET_IPV6"
-                    remote_as: 4264830003
-                    route_policy_in: WBR_DCGW_Internet_INCOMING
+                    description: "GW61.FM_INTERNET_IPV6"
+                    remote_as: 5
+                    route_policy_in: WBR_GW_Internet_INCOMING
                     route_policy_out: DefaultOnly_WITH_MED
                   - ipv6_address: 2607:f798:3::4F
                     description: "BR02.FM_IPV6"
-                    remote_as: 64812
-                    route_policy_in: WBR_DCGW_Internet_INCOMING
+                    remote_as: 4
+                    route_policy_in: WBR_GW_Internet_INCOMING
                     route_policy_out: DefaultOnly_WITH_MED
               - name: SIP_PEERING
                 rd: "10.175.232.7:5"
                 ipv4_ebgp_peers:
                   - ipv4_address: 10.175.234.74
-                    description: "DCGW60.FM"
-                    remote_as: 4264830003
-                    route_policy_in: WBR_DCGW_SIP_INCOMING
+                    description: "GW60.FM"
+                    remote_as: 5
+                    route_policy_in: WBR_GW_SIP_INCOMING
                     route_policy_out: SET_MED_IGP_METRIC
                   - ipv4_address: 10.175.234.78
-                    description: "DCGW61.FM"
-                    remote_as: 4264830002
-                    route_policy_in: WBR_DCGW_SIP_INCOMING
+                    description: "GW61.FM"
+                    remote_as: 3
+                    route_policy_in: WBR_GW_SIP_INCOMING
                     route_policy_out: SET_MED_IGP_METRIC
                 ipv6_ebgp_peers:
                   - ipv6_address: 2607:f798:3::d6
-                    description: "DCGW61.FM"
-                    remote_as: 4264830003
-                    route_policy_in: WBR_DCGW_SIP_INCOMING
+                    description: "GW61.FM"
+                    remote_as: 5
+                    route_policy_in: WBR_GW_SIP_INCOMING
                     route_policy_out: SET_MED_IGP_METRIC
                   - ipv6_address: 2607:f798:3::e0
-                    description: "DCGW60.FM"
-                    remote_as: 4264830003
-                    route_policy_in: WBR_DCGW_SIP_INCOMING
+                    description: "GW60.FM"
+                    remote_as: 5
+                    route_policy_in: WBR_GW_SIP_INCOMING
                     route_policy_out: SET_MED_IGP_METRIC
               - name: VRF_ROAMING
                 rd: "10.175.232.7:3"
@@ -1019,7 +895,7 @@ groups:
                 ipv4_ebgp_peers:
                   - ipv4_address: 10.175.234.47
                     description: "BR02.FM"
-                    remote_as: 64812
+                    remote_as: 4
                     route_policy_in: WBR_BR_ROAMING_INCOMING
                     route_policy_out: PASS-ALL
           bundle_interfaces:
@@ -1034,7 +910,7 @@ groups:
                   ipv4_address: 10.175.234.46/31
                   ipv6_address: 2607:f798:3::4c/127
                 - sub_interface_id: 2
-                  description: CONNECTED TO BR01.FLMS2 BE2.2 vrf Internet
+                  description: CONNECTED TO BR01.FW BE2.2 vrf Internet
                   vrf: Internet
                   ipv4_address: 10.175.233.64/31
                   ipv6_address: 2607:f798:3::4e/127
@@ -1046,7 +922,7 @@ groups:
               member_interfaces:
                 - HundredGigE0/0/0/40
             - bundle_id: 5
-              description: CONNECTED TO WCR01.FLOT3 BUNDLE 5
+              description: CONNECTED TO WCR01.FZ BUNDLE 5
               ipv4_address: 10.175.233.35/31
               ipv6_address: 2607:f798:3::2f/127
               router_isis: true
@@ -1067,16 +943,16 @@ groups:
               member_interfaces:
                 - TenGigE0/0/0/30
             - bundle_id: 10
-              description: CONNECTED TO DCGW61.FM BE10
+              description: CONNECTED TO GW61.FM BE10
               member_interfaces:
                 - HundredGigE0/0/0/41
               sub_interfaces:
                 - sub_interface_id: 1
-                  description: CONNECTED TO DCGW61.FM BE10.1 VPNV4
+                  description: CONNECTED TO GW61.FM BE10.1 VPNV4
                   ipv4_address: 10.175.233.62/31
                   ipv6_address: 2607:f798:3::48/127
                 - sub_interface_id: 2
-                  description: CONNECTED TO DCGW61.FM BE10.2 vrf Internet
+                  description: CONNECTED TO GW61.FM BE10.2 vrf Internet
                   vrf: Internet
                   ipv4_address: 10.175.234.15/31
                   ipv6_address: 2607:f798:3::4a/127
