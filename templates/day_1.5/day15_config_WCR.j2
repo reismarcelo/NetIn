@@ -1,0 +1,41 @@
+﻿{% for bundle in bundle_interfaces %}
+interface Bundle-Ether{{ bundle.bundle_id }}
+ description {{ bundle.description }}
+ mtu 9216
+ service-policy input POLICY_CORE_INGRESS
+ service-policy output POLICY_CORE_EGRESS
+ ipv4 address {{ bundle.ipv4_address | ipv4_address }} {{ bundle.ipv4_address | ipv4_netmask }}
+ ipv6 address {{ bundle.ipv6_address }}
+ ipv6 enable
+ load-interval 30
+!
+{% for member in bundle.member_interfaces %}
+interface {{ member }}
+ description {{ bundle.description }}
+ bundle id {{ bundle.bundle_id }} mode active
+ lacp period short
+ carrier-delay up 1 down 0
+ load-interval 30
+!
+{% endfor %}
+{% endfor %}
+{% if routing_igp.isis is defined %}
+router isis {{ routing_igp.isis.process_id }}
+{% for bundle in bundle_interfaces %}
+{% if bundle.router_isis is true %}
+ interface Bundle-Ether{{ bundle.bundle_id }}
+  circuit-type level-2-only
+  bfd minimum-interval 50
+  bfd multiplier 3
+  bfd fast-detect ipv4
+  point-to-point
+  address-family ipv4 unicast
+   fast-reroute per-prefix
+   fast-reroute per-prefix ti-lfa
+   {# metric fallback bandwidth multiplier 2 threshold 60 > Not supported by NED #}
+  !
+ !
+{% endif %}
+{% endfor %}
+{% endif %}
+!

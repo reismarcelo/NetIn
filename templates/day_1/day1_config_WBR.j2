@@ -1,0 +1,561 @@
+hostname {{ device }}
+logging trap informational
+logging archive
+ device harddisk
+ severity debugging
+ file-size 5
+ frequency daily
+ archive-size 300
+ archive-length 4
+!
+logging console disable
+logging monitor debugging
+logging buffered 3000000
+logging buffered informational
+logging facility local3
+{% for syslog_ipv4_server in syslog_ipv4_servers %}
+{% if loop.first %}{# CDG #}
+logging {{ syslog_ipv4_server }} vrf Mgmt port 9514
+{% elif (loop.index == 2) or device is not matches 'bpa-gct-seed' %}
+logging {{ syslog_ipv4_server }} vrf Mgmt severity info port default
+{% endif %}
+{% endfor %}
+logging hostnameprefix {{ device }}
+logging suppress duplicates
+service timestamps log datetime msec show-timezone
+service timestamps debug datetime msec show-timezone
+domain vrf Mgmt name acme.com
+domain name acme.com
+{% for vrf_dns in dns_vrf_ipv4_servers %}
+{% if loop.first or device is not matches 'bpa-gct-seed' %}
+domain vrf Mgmt name-server {{ vrf_dns }}
+{% endif %}
+{% endfor %}
+{% if dns_ipv4_servers is defined %}
+{% for dns in dns_ipv4_servers %}
+{% if loop.first or device is not matches 'bpa-gct-seed' %}
+domain name-server {{ dns }}
+{% endif %}
+{% endfor %}
+{% endif %}
+!
+{% for account in local_users.admins %}
+{% if loop.first or device is not matches 'bpa-gct-seed' %}
+username {{ account.username }}
+ group root-lr
+ group cisco-support
+ secret 10 {{ account.secret }}
+!
+{% endif %}
+{% endfor %}
+{% if local_users.operators is defined %}
+{% for account in local_users.operators %}
+{% if loop.first or device is not matches 'bpa-gct-seed' %}
+username {{ account.username }}
+ group netadmin
+ secret 10 {{ account.secret }}
+!
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if local_users.observers is defined %}
+{% for account in local_users.observers %}
+{% if loop.first or device is not matches 'bpa-gct-seed' %}
+username {{ account.username }}
+ group read-only-tg
+ secret 10 {{ account.secret }}
+!
+{% endif %}
+{% endfor %}
+{% endif %}
+grpc
+ vrf Mgmt
+ port 57400
+ no-tls
+ address-family ipv4
+!
+tpa
+ vrf Mgmt
+  address-family ipv4
+   update-source dataports active-management
+  !
+ !
+!
+nsr process-failures switchover
+!
+vrf Mgmt
+ address-family ipv4 unicast
+ !
+ address-family ipv6 unicast
+ !
+!
+vrf SIGTRAN
+ address-family ipv4 unicast
+  import route-target
+   64512:90
+   64512:91
+  !
+  export route-target
+   64512:90
+   64512:91
+  !
+ !
+ address-family ipv6 unicast
+  import route-target
+   64512:90
+   64512:91
+  !
+  export route-target
+   64512:90
+   64512:91
+  !
+ !
+!
+vrf Internet
+ address-family ipv4 unicast
+  import route-target
+   64512:100
+  !
+  export route-target
+   64512:100
+  !
+ !
+ address-family ipv6 unicast
+  import route-target
+   64512:100
+  !
+  export route-target
+   64512:100
+  !
+ !
+!
+vrf IPRAN_VRF
+ address-family ipv4 unicast
+  import route-target
+   64512:44
+  !
+  export route-target
+   64512:44
+  !
+ !
+!
+vrf infra-vrf
+ description Test VRF for ND to Fabric inband reachability
+ address-family ipv4 unicast
+  import route-target
+   64512:51
+   64512:52
+  !
+  export route-target
+   64512:50
+  !
+ !
+!
+vrf SIP_PEERING
+ address-family ipv4 unicast
+  import route-target
+   64512:300
+  !
+  export route-target
+   64512:300
+  !
+ !
+ address-family ipv6 unicast
+  import route-target
+   64512:300
+  !
+  export route-target
+   64512:300
+  !
+ !
+!
+vrf VRF_ROAMING
+ address-family ipv4 unicast
+  {# import from vrf allow backup > Not supported by NED #}
+  import route-target
+   64512:200
+  !
+  export route-target
+   64512:200
+  !
+ !
+ address-family ipv6 unicast
+  {# import from vrf allow backup > Not supported by NED #}
+  import route-target
+   64512:200
+  !
+  export route-target
+   64512:200
+  !
+ !
+!
+line default
+ transport input ssh
+ transport output telnet ssh
+!
+vty-pool default 0 9 line-template default
+!
+snmp-server ifindex persist
+snmp-server vrf Mgmt
+{% for host in snmp.trap_hosts %}
+{% if loop.first or device is not matches 'bpa-gct-seed' %}
+ host {{ host.address }} traps version 3 priv {{ host.community }} udp-port 1062
+{% endif %}
+{% endfor %}
+!
+{% for user in snmp.snmp_v3_users %}
+{% if loop.first or device is not matches 'bpa-gct-seed' %}
+snmp-server user {{ user.username }} v3_group v3 auth md5 encrypted {{ user.authentication_md5 }} priv aes 128 encrypted {{ user.encryption_aes128 }}
+{% endif %}
+{% endfor %}
+snmp-server view all_oids 1 included
+snmp-server group v3_group v3 priv notify all_oids read all_oids
+fpd auto-upgrade enable
+!
+ntp
+{% for ntp_server in ntp.vrf_ipv4_servers %}
+{% if loop.first %}
+ server vrf Mgmt {{ ntp_server }} prefer
+{% elif (loop.index == 2) or device is not matches 'bpa-gct-seed' %}
+ server vrf Mgmt {{ ntp_server }}
+{% endif %}
+{% endfor %}
+ access-group vrf Mgmt ipv4 peer ACL_18
+ update-calendar
+!
+ipv4 access-list ACL_18
+{% for ntp_server in ntp.vrf_ipv4_servers %}
+ {{ loop.index * 10 }} permit ipv4 host {{ ntp_server }} any
+ {% if loop.last %}
+ {{ (loop.index + 1) * 10 }} deny ipv4 any any
+ {% endif %}
+{% endfor %}
+!
+bfd
+{% for line_card in bfd.multipath_lcs %}
+ multipath include location {{ line_card }}
+{% endfor %}
+ echo disable
+ dampening disable
+!
+call-home
+ vrf Mgmt
+ service active
+ contact smart-licensing
+ {% if http_proxy is defined %}
+ http-proxy {{ http_proxy.proxy }} port {{ http_proxy.port }}
+ {% endif %}
+ profile CiscoTAC-1
+  active
+  destination address http https://tools.cisco.com/its/service/oddce/services/DDCEService
+  destination transport-method email disable
+  destination transport-method http
+ !
+!
+fpd auto-upgrade enable
+!
+ipv4 virtual address vrf Mgmt {{ management_oob.vip_ipv4_address }}
+ipv4 virtual address use-as-src-addr
+!
+{% for interface in management_oob.interfaces %}
+interface {{ interface.name }}
+ vrf Mgmt
+ ipv4 address {{ interface.ipv4_address | ipv4_address }} {{ interface.ipv4_address | ipv4_netmask }}
+!
+{% endfor %}
+!
+router static
+ vrf Mgmt
+  address-family ipv4 unicast
+   0.0.0.0/0 {{ management_oob.default_gateway_ipv4_address }}
+  !
+ !
+!
+interface Loopback0
+ description Used_for_Router_ID
+ ipv4 address {{ routing_igp.loopback_0.ipv4_address | ipv4_address }} {{ routing_igp.loopback_0.ipv4_address | ipv4_netmask }}
+ {% if routing_igp.loopback_0.ipv6_address is defined %}
+ ipv6 address {{ routing_igp.loopback_0.ipv6_address }}
+ {% endif %}
+!
+prefix-set MATCH_32_ONLY
+  0.0.0.0/0 eq 32
+  end-set
+!
+community-set CDC_LOCAL_REGION
+  64813:13
+  end-set
+!
+community-set WBR-DCGW60_FLBASP
+  2000:2000
+  end-set
+!
+community-set BGP_LOCAL_COMMUNITY
+  65000:4
+  end-set
+!
+community-set CDC_LOCAL_COMMUNITY
+  64813:15
+  end-set
+!
+community-set CDC_LOCAL_SUB_REGION
+  64813:14
+  end-set
+!
+community-set REGION_LOCAL_COMMUNITY
+  64813:13
+  end-set
+!
+community-set WBR_REGIONAL_COMMUNITY
+  64813:12
+  end-set
+!
+community-set SUBREGION_LOCAL_COMMUNITY
+  64813:14
+  end-set
+!
+{% filter format_route_policy(device is matches 'bpa-gct-seed') %}
+route-policy PASS_ALL
+  pass
+  end-policy
+!
+route-policy DefaultOnly
+  if destination in (0.0.0.0/0, ::/0) then
+    pass
+  endif
+  end-policy
+!
+route-policy BGP-PIC-EDGE
+  set path-selection backup 1 install multipath-protect advertise multipath-protect-advertise
+  end-policy
+!
+route-policy TEST_MED_IGP
+  set med igp-cost
+  pass
+  end-policy
+!
+route-policy WBR-DCGW-GRT
+  pass
+  set community WBR-DCGW-GRT
+  end-policy
+!
+route-policy DefaultOnlyV4
+  if destination in (0.0.0.0/0) then
+    pass
+  endif
+  end-policy
+!
+route-policy DefaultOnlyV6
+  if destination in (::/0) then
+    pass
+  endif
+  end-policy
+!
+route-policy SET_MED_IGP_METRIC
+  set med igp-cost
+  end-policy
+!
+route-policy from_IXIA_set_comm
+  set community CDC_LOCAL_SUB_REGION additive
+  set community CDC_LOCAL_REGION additive
+  end-policy
+!
+route-policy DefaultOnly_WITH_MED
+  if destination in (0.0.0.0/0, ::/0) then
+    set med igp-cost
+  else
+    drop
+  endif
+  end-policy
+!
+route-policy WBR_A3_IuPS_INCOMING
+  set community REGION_LOCAL_COMMUNITY additive
+  set community SUBREGION_LOCAL_COMMUNITY additive
+  end-policy
+!
+route-policy WBR_DCGW_GRT_OUTGOING
+  if extcommunity rt matches-any (64512:300) then
+    drop
+  else
+    set med igp-cost
+  endif
+  end-policy
+!
+route-policy WBR_DCGW_SIP_INCOMING
+  set community REGION_LOCAL_COMMUNITY additive
+  set community SUBREGION_LOCAL_COMMUNITY additive
+  end-policy
+!
+route-policy WBR_vWRR_GRT_INCOMING
+  if community matches-any CDC_LOCAL_COMMUNITY then
+    drop
+  else
+    pass
+  endif
+  end-policy
+!
+route-policy BLOCK_MY_CDC_SUB_REGION
+  if community matches-any CDC_LOCAL_SUB_REGION then
+    drop
+  else
+    pass
+  endif
+  end-policy
+!
+route-policy WBR_A3_SIGTRAN_INCOMING
+  set community REGION_LOCAL_COMMUNITY additive
+  set community SUBREGION_LOCAL_COMMUNITY additive
+  end-policy
+!
+route-policy WBR_BR_ROAMING_INCOMING
+  set community REGION_LOCAL_COMMUNITY additive
+  set community SUBREGION_LOCAL_COMMUNITY additive
+  end-policy
+!
+route-policy WBR_BR_Internet_INCOMING
+  #temporary remove the region and subregion tag to facilitate implementing the tets cases
+  pass
+  end-policy
+!
+route-policy WBR_BR_Internet_OUTGOING
+  if destination in (0.0.0.0/0, ::/0) then
+    drop
+  elseif community in WBR_REGIONAL_COMMUNITY then
+    set med igp-cost
+  else
+    drop
+  endif
+  end-policy
+!
+route-policy WBR_DCGW_Internet_INCOMING
+  set community REGION_LOCAL_COMMUNITY additive
+  set community SUBREGION_LOCAL_COMMUNITY additive
+  end-policy
+!
+route-policy WBR-DCGW60_FLBASP_Community
+  set community WBR-DCGW60_FLBASP
+  if destination in (200.200.200.200/32) then
+    drop
+  endif
+  end-policy
+{% endfilter %}
+!
+router isis {{ routing_igp.isis.process_id }}
+ is-type level-2-only
+ net {{ routing_igp.isis.net }}
+ nsr
+ nsf ietf
+ log adjacency changes
+ lsp-gen-interval initial-wait 50 secondary-wait 200 maximum-wait 5000
+ lsp-refresh-interval 65000
+ max-lsp-lifetime 65535
+ address-family ipv4 unicast
+  metric-style wide
+  advertise passive-only
+  mpls traffic-eng router-id Loopback0
+  spf-interval initial-wait 50 secondary-wait 200 maximum-wait 5000
+  maximum-paths 16
+  router-id {{ routing_igp.loopback_0.ipv4_address | ipv4_address }}
+  segment-routing mpls
+ !
+ interface Loopback0
+  passive
+  address-family ipv4 unicast
+   prefix-sid index {{ routing_igp.loopback_0.prefix_sid }}
+  !
+ !
+!
+mpls oam
+!
+segment-routing
+ global-block 16000 23999
+ traffic-eng
+ !
+!
+lldp
+!
+router bgp {{ routing_bgp.local_as }}
+ nsr
+ bgp router-id {{ routing_igp.loopback_0.ipv4_address | ipv4_address }}
+ bgp graceful-restart restart-time 120
+ bgp graceful-restart stalepath-time 360
+ bgp graceful-restart
+ address-family ipv4 unicast
+ !
+ address-family vpnv4 unicast
+  additional-paths receive
+  additional-paths send
+  additional-paths selection route-policy BGP-PIC-EDGE
+  retain route-target all
+ !
+ address-family ipv6 unicast
+ !
+ address-family vpnv6 unicast
+  additional-paths receive
+  additional-paths send
+  additional-paths selection route-policy BGP-PIC-EDGE
+  retain route-target all
+ !
+ address-family ipv4 rt-filter
+ !
+ address-family link-state link-state
+ !
+ neighbor-group RR
+  remote-as {{ routing_bgp.local_as }}
+  bfd fast-detect
+  bfd multiplier 3
+  bfd minimum-interval 50
+  description VwRR01.FLBASP & vWRR01.FLMS1
+  update-source Loopback0
+   address-family vpnv4 unicast
+   maximum-prefix 25000 80 warning-only
+   next-hop-self
+   route-policy WBR_vWRR_GRT_INCOMING in
+  !
+  address-family vpnv6 unicast
+   maximum-prefix 25000 80 warning-only
+   next-hop-self
+   route-policy WBR_vWRR_GRT_INCOMING in
+  !
+  address-family ipv4 rt-filter
+   next-hop-self
+  !
+  address-family link-state link-state
+   next-hop-self
+  !
+  !
+ !
+ neighbor-group PCE
+  remote-as {{ routing_bgp.local_as }}
+  description PCE01.FLBASP & PCE1.FLMS1
+  update-source Loopback0
+  address-family link-state link-state
+   next-hop-self
+  !
+ neighbor-group IXIA
+  remote-as 4264830004
+  description IXIA
+  address-family ipv4 unicast
+   route-policy from_IXIA_set_comm in
+   route-policy PASS-ALL out
+  !
+  address-family ipv6 unicast
+   maximum-prefix 25000 80 warning-only
+   route-policy from_IXIA_set_comm in
+   route-policy PASS-ALL out
+ !
+!
+segment-routing
+ traffic-eng
+ !
+!
+ssh timeout 60
+ssh server session-limit 10
+ssh server v2
+ssh server vrf Mgmt
+crypto ca trustpoint Trustpool
+ crl optional
+ vrf Mgmt
+!
+license smart flexible-consumption enable
+!

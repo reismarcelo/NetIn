@@ -1,0 +1,344 @@
+﻿hostname {{ device }}
+logging trap informational
+logging archive
+ device harddisk
+ severity debugging
+ file-size 5
+ frequency daily
+ archive-size 300
+ archive-length 4
+!
+logging console disable
+logging monitor debugging
+logging buffered 3000000
+logging buffered informational
+logging facility local3
+{% for syslog_ipv4_server in syslog_ipv4_servers %}
+{% if loop.first %}{# CDG #}
+logging {{ syslog_ipv4_server }} vrf Mgmt port 9514
+{% elif (loop.index == 2) or device is not matches 'bpa-gct-seed' %}
+logging {{ syslog_ipv4_server }} vrf Mgmt severity info port default
+{% endif %}
+{% endfor %}
+logging hostnameprefix {{ device }}
+logging suppress duplicates
+service timestamps log datetime msec show-timezone
+service timestamps debug datetime msec show-timezone
+domain vrf Mgmt name acme.com
+domain name acme.com
+{% for vrf_dns in dns_vrf_ipv4_servers %}
+{% if loop.first or device is not matches 'bpa-gct-seed' %}
+domain vrf Mgmt name-server {{ vrf_dns }}
+{% endif %}
+{% endfor %}
+{% if dns_ipv4_servers is defined %}
+{% for dns in dns_ipv4_servers %}
+{% if loop.first or device is not matches 'bpa-gct-seed' %}
+domain name-server {{ dns }}
+{% endif %}
+{% endfor %}
+{% endif %}
+!
+{% for account in local_users.admins %}
+{% if loop.first or device is not matches 'bpa-gct-seed' %}
+username {{ account.username }}
+ group root-lr
+ group cisco-support
+ secret 10 {{ account.secret }}
+!
+{% endif %}
+{% endfor %}
+{% if local_users.operators is defined %}
+{% for account in local_users.operators %}
+{% if loop.first or device is not matches 'bpa-gct-seed' %}
+username {{ account.username }}
+ group netadmin
+ secret 10 {{ account.secret }}
+!
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if local_users.observers is defined %}
+{% for account in local_users.observers %}
+{% if loop.first or device is not matches 'bpa-gct-seed' %}
+username {{ account.username }}
+ group read-only-tg
+ secret 10 {{ account.secret }}
+!
+{% endif %}
+{% endfor %}
+{% endif %}
+grpc
+ vrf Mgmt
+ port 57400
+ no-tls
+ address-family ipv4
+!
+tpa
+ vrf Mgmt
+  address-family ipv4
+   update-source dataports active-management
+  !
+ !
+!
+nsr process-failures switchover
+!
+vrf Mgmt
+ address-family ipv4 unicast
+ !
+ address-family ipv6 unicast
+ !
+!
+line default
+ transport input ssh
+ transport output telnet ssh
+!
+vty-pool default 0 9 line-template default
+!
+snmp-server ifindex persist
+snmp-server vrf Mgmt
+{% for host in snmp.trap_hosts %}
+{% if loop.first or device is not matches 'bpa-gct-seed' %}
+ host {{ host.address }} traps version 3 priv {{ host.community }} udp-port 1062
+{% endif %}
+{% endfor %}
+!
+{% for user in snmp.snmp_v3_users %}
+{% if loop.first or device is not matches 'bpa-gct-seed' %}
+snmp-server user {{ user.username }} v3_group v3 auth md5 encrypted {{ user.authentication_md5 }} priv aes 128 encrypted {{ user.encryption_aes128 }}
+{% endif %}
+{% endfor %}
+snmp-server view all_oids 1 included
+snmp-server group v3_group v3 priv notify all_oids read all_oids
+fpd auto-upgrade enable
+!
+ntp
+{% for ntp_server in ntp.vrf_ipv4_servers %}
+{% if loop.first %}
+ server vrf Mgmt {{ ntp_server }} prefer
+{% elif (loop.index == 2) or device is not matches 'bpa-gct-seed' %}
+ server vrf Mgmt {{ ntp_server }}
+{% endif %}
+{% endfor %}
+ access-group vrf Mgmt ipv4 peer ACL_18
+ update-calendar
+!
+ipv4 access-list ACL_18
+{% for ntp_server in ntp.vrf_ipv4_servers %}
+ {{ loop.index * 10 }} permit ipv4 host {{ ntp_server }} any
+ {% if loop.last %}
+ {{ (loop.index + 1) * 10 }} deny ipv4 any any
+ {% endif %}
+{% endfor %}
+!
+bfd
+{% for line_card in bfd.multipath_lcs %}
+ multipath include location {{ line_card }}
+{% endfor %}
+ echo disable
+ dampening disable
+!
+call-home
+ vrf Mgmt
+ service active
+ contact smart-licensing
+ {% if http_proxy is defined %}
+ http-proxy {{ http_proxy.proxy }} port {{ http_proxy.port }}
+ {% endif %}
+ profile CiscoTAC-1
+  active
+  destination address http https://tools.cisco.com/its/service/oddce/services/DDCEService
+  destination transport-method email disable
+  destination transport-method http
+ !
+!
+fpd auto-upgrade enable
+!
+ipv4 virtual address vrf Mgmt {{ management_oob.vip_ipv4_address }}
+ipv4 virtual address use-as-src-addr
+!
+{% for interface in management_oob.interfaces %}
+interface {{ interface.name }}
+ vrf Mgmt
+ ipv4 address {{ interface.ipv4_address | ipv4_address }} {{ interface.ipv4_address | ipv4_netmask }}
+!
+{% endfor %}
+!
+router static
+ vrf Mgmt
+  address-family ipv4 unicast
+   0.0.0.0/0 {{ management_oob.default_gateway_ipv4_address }}
+  !
+ !
+!
+{% if breakouts is defined %}
+{% for breakout in breakouts.breakout_4x100 %}
+controller {{ breakout.location }}
+ breakout 4x100
+!
+{% endfor %}
+{% endif %}
+!
+interface Loopback0
+ description Used_for_Router_ID
+ ipv4 address {{ routing_igp.loopback_0.ipv4_address | ipv4_address }} {{ routing_igp.loopback_0.ipv4_address | ipv4_netmask }}
+ {% if routing_igp.loopback_0.ipv6_address is defined %}
+ ipv6 address {{ routing_igp.loopback_0.ipv6_address }}
+ {% endif %}
+!
+router isis {{ routing_igp.isis.process_id }}
+ is-type level-2-only
+ net {{ routing_igp.isis.net }}
+ nsr
+ nsf ietf
+ log adjacency changes
+ lsp-gen-interval initial-wait 50 secondary-wait 200 maximum-wait 5000
+ lsp-refresh-interval 65000
+ max-lsp-lifetime 65535
+ address-family ipv4 unicast
+  metric-style wide
+  advertise passive-only
+  mpls traffic-eng router-id Loopback0
+  spf-interval initial-wait 50 secondary-wait 200 maximum-wait 5000
+  maximum-paths 16
+  router-id {{ routing_igp.loopback_0.ipv4_address | ipv4_address }}
+  segment-routing mpls
+ !
+ interface Loopback0
+  passive
+  address-family ipv4 unicast
+   prefix-sid index {{ routing_igp.loopback_0.prefix_sid }}
+  !
+ !
+!
+mpls oam
+!
+segment-routing
+ global-block 16000 23999
+ traffic-eng
+ !
+!
+lldp
+!
+{% if device is not matches 'bpa-gct-seed' %}
+{# Temporarily not including power-mgmt cli on bpa-gct-seed because current NSO NED does not support it #}
+power-mgmt redundancy-num-pms 1
+{% endif %}
+ssh timeout 60
+ssh server session-limit 10
+ssh server v2
+ssh server vrf Mgmt
+crypto ca trustpoint Trustpool
+ crl optional
+ vrf Mgmt
+!
+{% filter format_class_map(device is matches 'bpa-gct-seed') %}
+class-map match-any tc3
+ match traffic-class 3
+ end-class-map
+!
+class-map match-any tc4
+ match traffic-class 4
+ end-class-map
+!
+class-map match-any tc5
+ match traffic-class 5
+ end-class-map
+!
+class-map match-any tc6
+ match traffic-class 6
+ end-class-map
+!
+class-map match-any tc7
+ match traffic-class 7
+ end-class-map
+!
+class-map match-any CONTROL
+ match mpls experimental topmost 6 3 7
+ end-class-map
+!
+class-map match-any INELASTIC
+ match mpls experimental topmost 5
+ end-class-map
+!
+class-map match-any PREFERRED
+ match mpls experimental topmost 4
+ end-class-map
+!
+class-map match-any TRANSACTIONAL_DATA
+ match mpls experimental topmost 1 2
+ end-class-map
+{% endfilter %}
+!
+policy-map POLICY_CORE_EGRESS
+ class tc7
+  priority level 1
+  shape average percent 4
+ !
+ class tc6
+  shape average percent 30
+  priority level 2
+ !
+ class tc5
+  bandwidth remaining ratio 35
+  queue-limit 12 ms
+ !
+ class tc4
+  bandwidth remaining ratio 7
+  queue-limit 12 ms
+ !
+ class tc3
+  bandwidth remaining ratio 23
+  random-detect 50 ms 100 ms
+ !
+ class class-default
+  bandwidth remaining ratio 35
+  random-detect 50 ms 100 ms
+ !
+ end-policy-map
+!
+policy-map POLICY_CORE_INGRESS
+ class INELASTIC
+  set traffic-class 6
+ !
+ class PREFERRED
+  set traffic-class 5
+ !
+ class CONTROL
+  set traffic-class 4
+ !
+ class TRANSACTIONAL_DATA
+  set traffic-class 3
+ !
+ class class-default
+ !
+ end-policy-map
+!
+flow exporter-map FNF_EXPORT_MAP
+ version v9
+  options sampler-table timeout 300
+  template timeout 300
+  template data timeout 300
+  template options timeout 300
+ !
+ transport udp 9991
+ source Loopback0
+ destination 65.97.203.22
+!
+flow monitor-map FNF_MONITOR_MAP
+ record ipv4
+ exporter FNF_EXPORT_MAP
+ cache entries 100000
+ cache timeout active 60
+ cache timeout inactive 15
+!
+flow monitor-map FNF_MONITOR_MAP_IPV6
+ record ipv6
+ exporter FNF_EXPORT_MAP
+ cache entries 1000000
+ cache timeout active 60
+ cache timeout inactive 15
+!
+sampler-map FNF_SAMPLER_MAP
+ random 1 out-of 1024
+!

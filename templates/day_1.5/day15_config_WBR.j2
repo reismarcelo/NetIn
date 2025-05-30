@@ -1,0 +1,70 @@
+{% for bundle in bundle_interfaces %}
+interface Bundle-Ether{{ bundle.bundle_id }}
+{% if bundle.description is defined %}
+ description {{ bundle.description }}
+{% endif %}
+ load-interval 30
+{% if bundle.ipv4_address is defined %}
+ ipv4 address {{ bundle.ipv4_address | ipv4_address }} {{ bundle.ipv4_address | ipv4_netmask }}
+{% endif %}
+{% if bundle.ipv6_address is defined %}
+ ipv6 address {{ bundle.ipv6_address }}
+ ipv6 enable
+{% endif %}
+{% if not bundle.sub_interfaces %}
+ mtu 9216
+ service-policy input POLICY_CORE_INGRESS
+ service-policy output POLICY_CORE_EGRESS
+{% endif %}
+!
+{% for sub_interface in bundle.sub_interfaces %}
+interface Bundle-Ether{{ bundle.bundle_id }}.{{ sub_interface.sub_interface_id }}
+{% if sub_interface.description is defined %}
+ description {{ sub_interface.description }}
+{% endif %}
+{% if sub_interface.vrf is defined %}
+ vrf {{ sub_interface.vrf }}
+{% endif %}
+{% if sub_interface.ipv4_address is defined %}
+ ipv4 address {{ sub_interface.ipv4_address | ipv4_address }} {{ sub_interface.ipv4_address | ipv4_netmask }}
+{% endif %}
+{% if sub_interface.ipv6_address is defined %}
+ ipv6 address {{ sub_interface.ipv6_address }}
+ ipv6 enable
+{% endif %}
+ mtu 9216
+ encapsulation dot1q {{ sub_interface.sub_interface_id }}
+ service-policy input POLICY_CORE_INGRESS
+ service-policy output POLICY_CORE_EGRESS
+!
+{% endfor %}
+{% for member in bundle.member_interfaces %}
+interface {{ member }}
+ description {{ bundle.description }}
+ bundle id {{ bundle.bundle_id }} mode active
+ lacp period short
+ carrier-delay up 1 down 0
+ load-interval 30
+!
+{% endfor %}
+{% endfor %}
+{% if routing_igp.isis is defined %}
+router isis {{ routing_igp.isis.process_id }}
+{% for bundle in bundle_interfaces %}
+{% if bundle.router_isis is true %}
+ interface Bundle-Ether{{ bundle.bundle_id }}
+  circuit-type level-2-only
+  bfd minimum-interval 50
+  bfd multiplier 3
+  bfd fast-detect ipv4
+  point-to-point
+  address-family ipv4 unicast
+   fast-reroute per-prefix
+   fast-reroute per-prefix ti-lfa
+   {# metric fallback bandwidth multiplier 2 threshold 60 > Not supported by NED #}
+  !
+ !
+{% endif %}
+{% endfor %}
+{% endif %}
+!
