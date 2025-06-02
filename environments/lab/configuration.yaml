@@ -22,7 +22,7 @@ global_vars:
   local_users:
     admins:
       - username: cisco
-        secret: "cisco"
+        secret: "$6$SALT$UGMqRqG4gGdCj5lCPMfVXGBBmDEfzZrJvrwxqXD6PJVRfho0ROLQVlNZCUYYmJ1xLZsjAUQiupg5nCrfMKLlY1"
         
   snmp:
     trap_hosts:
@@ -102,6 +102,13 @@ groups:
               member_interfaces:
                 - HundredGigE0/0/0/8/0
                 - HundredGigE0/1/0/13
+            - bundle_id: 5
+              description: connection test
+              ipv4_address: 1.2.3.5/31
+              ipv6_address: 2607:f798:3::100/127
+              router_isis: true
+              member_interfaces:
+                - HundredGigE0/1/2/3
 
       - name: WCR01.FM
         vars:
