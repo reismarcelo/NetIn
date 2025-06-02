@@ -312,11 +312,137 @@ class MetadataModel(ConfigBaseModel):
 class RenderingVarsModel(ConfigBaseModel):
     global_vars: Optional[VarsModel] = None
     groups: list[GroupModel]
+    
+    @model_validator(mode='after')
+    def propagate_global_name(self) -> 'RenderingVarsModel':
+        """
+        Propagate global name to VarsModel for IP uniqueness validation.
+        """
+        from .validators import _ipv4_addresses, _ipv6_addresses
+        _ipv4_addresses.clear()
+        _ipv6_addresses.clear()
+        
+        if self.global_vars:
+            setattr(self.global_vars, '_device_name', 'global')
+            
+        return self
+        
+        def collect_ip_addresses(device_name: str, vars_model: VarsModel):
+            """
+            Collect and validate IP addresses from a VarsModel instance.
+            
+            Args:
+                device_name: Name of the device or scope (e.g., 'global', 'group-X')
+                vars_model: The VarsModel instance to collect IP addresses from
+            
+            Raises:
+                ValueError: If a duplicate IP address is found
+            """
+            if vars_model is None:
+                return
+                
+            # Bundle interfaces
+            for bundle in vars_model.bundle_interfaces:
+                if bundle.ipv4_address:
+                    ip_str = str(bundle.ipv4_address.ip)
+                    if ip_str in ipv4_addresses:
+                        existing = ipv4_addresses[ip_str]
+                        raise ValueError(f'IPv4 address {ip_str} is assigned to multiple interfaces: '
+                                       f'{existing[0]} {existing[1]}{existing[2]} and '
+                                       f'{device_name} Bundle-Ether{bundle.bundle_id}')
+                    ipv4_addresses[ip_str] = (device_name, 'Bundle-Ether', bundle.bundle_id)
+                
+                if bundle.ipv6_address:
+                    ip_str = str(bundle.ipv6_address.ip)
+                    if ip_str in ipv6_addresses:
+                        existing = ipv6_addresses[ip_str]
+                        raise ValueError(f'IPv6 address {ip_str} is assigned to multiple interfaces: '
+                                       f'{existing[0]} {existing[1]}{existing[2]} and '
+                                       f'{device_name} Bundle-Ether{bundle.bundle_id}')
+                    ipv6_addresses[ip_str] = (device_name, 'Bundle-Ether', bundle.bundle_id)
+                
+                # Sub-interfaces
+                for sub in bundle.sub_interfaces:
+                    if sub.ipv4_address:
+                        ip_str = str(sub.ipv4_address.ip)
+                        if ip_str in ipv4_addresses:
+                            existing = ipv4_addresses[ip_str]
+                            raise ValueError(f'IPv4 address {ip_str} is assigned to multiple interfaces: '
+                                           f'{existing[0]} {existing[1]}{existing[2]} and '
+                                           f'{device_name} Bundle-Ether{bundle.bundle_id}.{sub.sub_interface_id}')
+                        ipv4_addresses[ip_str] = (device_name, 'Bundle-Ether', f'{bundle.bundle_id}.{sub.sub_interface_id}')
+                    
+                    if sub.ipv6_address:
+                        ip_str = str(sub.ipv6_address.ip)
+                        if ip_str in ipv6_addresses:
+                            existing = ipv6_addresses[ip_str]
+                            raise ValueError(f'IPv6 address {ip_str} is assigned to multiple interfaces: '
+                                           f'{existing[0]} {existing[1]}{existing[2]} and '
+                                           f'{device_name} Bundle-Ether{bundle.bundle_id}.{sub.sub_interface_id}')
+                        ipv6_addresses[ip_str] = (device_name, 'Bundle-Ether', f'{bundle.bundle_id}.{sub.sub_interface_id}')
+            
+            # Loopback interfaces
+            if vars_model.routing_igp and vars_model.routing_igp.loopback_0:
+                loopback = vars_model.routing_igp.loopback_0
+                if loopback.ipv4_address:
+                    ip_str = str(loopback.ipv4_address.ip)
+                    if ip_str in ipv4_addresses:
+                        existing = ipv4_addresses[ip_str]
+                        raise ValueError(f'IPv4 address {ip_str} is assigned to multiple interfaces: '
+                                       f'{existing[0]} {existing[1]}{existing[2]} and '
+                                       f'{device_name} Loopback0')
+                    ipv4_addresses[ip_str] = (device_name, 'Loopback', 0)
+                
+                if loopback.ipv6_address:
+                    ip_str = str(loopback.ipv6_address.ip)
+                    if ip_str in ipv6_addresses:
+                        existing = ipv6_addresses[ip_str]
+                        raise ValueError(f'IPv6 address {ip_str} is assigned to multiple interfaces: '
+                                       f'{existing[0]} {existing[1]}{existing[2]} and '
+                                       f'{device_name} Loopback0')
+                    ipv6_addresses[ip_str] = (device_name, 'Loopback', 0)
+            
+            # Management interfaces
+            if vars_model.management_oob:
+                mgmt = vars_model.management_oob
+                if mgmt.vip_ipv4_address:
+                    vip_ip = str(mgmt.vip_ipv4_address.ip)
+                    if vip_ip in ipv4_addresses:
+                        existing = ipv4_addresses[vip_ip]
+                        raise ValueError(f'IPv4 address {vip_ip} is assigned to multiple interfaces: '
+                                       f'{existing[0]} {existing[1]}{existing[2]} and '
+                                       f'{device_name} Management-VIP')
+                    ipv4_addresses[vip_ip] = (device_name, 'Management-VIP', '')
+                
+                # Individual management interfaces
+                for mgmt_int in mgmt.interfaces:
+                    if mgmt_int.ipv4_address:
+                        ip_str = str(mgmt_int.ipv4_address.ip)
+                        if ip_str in ipv4_addresses:
+                            existing = ipv4_addresses[ip_str]
+                            raise ValueError(f'IPv4 address {ip_str} is assigned to multiple interfaces: '
+                                           f'{existing[0]} {existing[1]}{existing[2]} and '
+                                           f'{device_name} {mgmt_int.name}')
+                        ipv4_addresses[ip_str] = (device_name, mgmt_int.name, '')
+        
+        if self.global_vars:
+            collect_ip_addresses('global', self.global_vars)
+        
+        for group in self.groups:
+            if group.vars:
+                collect_ip_addresses(f'group-{group.name}', group.vars)
+            
+            for device in group.devices:
+                if device.vars:
+                    collect_ip_addresses(device.name, device.vars)
+        
+        return self
 
 
 class ConfigModel(RenderingVarsModel):
     metadata: MetadataModel
     targets_config: TargetsConfigModel
+    
 
 
 #

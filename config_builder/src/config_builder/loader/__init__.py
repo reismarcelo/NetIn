@@ -32,13 +32,24 @@ def load_yaml(model_cls: type[M], description: str, filename: os.PathLike | str)
         with open(filename) as yaml_file:
             yaml_dict = yaml.safe_load(yaml_file)
 
-        return model_cls(**yaml_dict)
+        with open('/tmp/ip_validation_debug.log', 'a') as f:
+            f.write(f"Loading {description} file: {filename}\n")
+            f.write(f"Using model class: {model_cls.__name__}\n")
+
+        model_instance = model_cls(**yaml_dict)
+        
+        with open('/tmp/ip_validation_debug.log', 'a') as f:
+            f.write(f"Model instantiation completed for {model_cls.__name__}\n")
+            
+        return model_instance
 
     except FileNotFoundError as ex:
         raise LoaderException(f"Could not open {description} file: {ex}") from None
     except yaml.YAMLError as ex:
         raise LoaderException(f'YAML syntax error in {description} file: {ex}') from None
     except ValidationError as ex:
+        with open('/tmp/ip_validation_debug.log', 'a') as f:
+            f.write(f"Validation error: {ex}\n")
         raise LoaderException(f"Invalid {description} file: {validation_error_summary(ex)}") from None
 
 

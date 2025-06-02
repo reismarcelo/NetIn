@@ -10,6 +10,8 @@ from pydantic import ValidationInfo, AfterValidator
 # Reusable validators
 #
 _used_tags: set[str] = set()
+_ipv4_addresses: dict[str, tuple[str, str, str]] = {}  # IP -> (device_name, interface_type, interface_id)
+_ipv6_addresses: dict[str, tuple[str, str, str]] = {}  # IP -> (device_name, interface_type, interface_id)
 
 
 def validate_tag(tag: str) -> str:
