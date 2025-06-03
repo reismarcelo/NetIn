@@ -32,9 +32,7 @@ def load_yaml(model_cls: type[M], description: str, filename: os.PathLike | str)
         with open(filename) as yaml_file:
             yaml_dict = yaml.safe_load(yaml_file)
 
-        model_instance = model_cls(**yaml_dict)
-        
-        return model_instance
+        return model_cls(**yaml_dict)
 
     except FileNotFoundError as ex:
         raise LoaderException(f"Could not open {description} file: {ex}") from None
