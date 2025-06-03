@@ -314,18 +314,15 @@ class RenderingVarsModel(ConfigBaseModel):
     groups: list[GroupModel]
     
     @model_validator(mode='after')
-    def propagate_global_name(self) -> 'RenderingVarsModel':
+    def validate_unique_ip_addresses(self) -> "RenderingVarsModel":
         """
-        Propagate global name to VarsModel for IP uniqueness validation.
-        """
-        from .validators import _ipv4_addresses, _ipv6_addresses
-        _ipv4_addresses.clear()
-        _ipv6_addresses.clear()
+        Validate that all IP addresses (IPv4 and IPv6) are unique across all interfaces in the configuration.
         
-        if self.global_vars:
-            setattr(self.global_vars, '_device_name', 'global')
-            
-        return self
+        This validator runs automatically during YAML loading for render and export commands.
+        """
+        print("Running IP uniqueness validation")
+        ipv4_addresses = {}  # IP -> (device_name, interface_type, interface_id)
+        ipv6_addresses = {}  # IP -> (device_name, interface_type, interface_id)
         
         def collect_ip_addresses(device_name: str, vars_model: VarsModel):
             """
@@ -425,6 +422,7 @@ class RenderingVarsModel(ConfigBaseModel):
                                            f'{device_name} {mgmt_int.name}')
                         ipv4_addresses[ip_str] = (device_name, mgmt_int.name, '')
         
+        # Collect and validate IPs from all levels
         if self.global_vars:
             collect_ip_addresses('global', self.global_vars)
         
@@ -442,6 +440,33 @@ class RenderingVarsModel(ConfigBaseModel):
 class ConfigModel(RenderingVarsModel):
     metadata: MetadataModel
     targets_config: TargetsConfigModel
+    
+    @model_validator(mode='after')
+    def validate_unique_ip_addresses_config(self) -> 'ConfigModel':
+        """
+        Ensure IP validation runs at the ConfigModel level as well.
+        This is needed because the render command loads the YAML directly into ConfigModel.
+        """
+        print("Running IP validation at ConfigModel level")
+        ipv4_addresses = {}
+        
+        for group in self.groups:
+            for device in group.devices:
+                if device.name == 'WCR01.FL':
+                    print(f"Found device {device.name}")
+                    if device.vars and device.vars.bundle_interfaces:
+                        for bundle in device.vars.bundle_interfaces:
+                            if bundle.ipv4_address:
+                                ip_str = str(bundle.ipv4_address.ip)
+                                print(f"Found IP {ip_str} on {device.name} Bundle-Ether{bundle.bundle_id}")
+                                if ip_str in ipv4_addresses:
+                                    existing = ipv4_addresses[ip_str]
+                                    error_msg = f"Duplicate IP {ip_str} found on {existing[0]} and {device.name} Bundle-Ether{bundle.bundle_id}"
+                                    print(f"ERROR: {error_msg}")
+                                    raise ValueError(error_msg)
+                                ipv4_addresses[ip_str] = (device.name, bundle.bundle_id)
+        
+        return self
     
 
 
