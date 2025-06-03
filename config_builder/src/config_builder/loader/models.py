@@ -320,7 +320,6 @@ class RenderingVarsModel(ConfigBaseModel):
         
         This validator runs automatically during YAML loading for render and export commands.
         """
-        print("Running IP uniqueness validation")
         ipv4_addresses = {}  # IP -> (device_name, interface_type, interface_id)
         ipv6_addresses = {}  # IP -> (device_name, interface_type, interface_id)
         
@@ -447,22 +446,18 @@ class ConfigModel(RenderingVarsModel):
         Ensure IP validation runs at the ConfigModel level as well.
         This is needed because the render command loads the YAML directly into ConfigModel.
         """
-        print("Running IP validation at ConfigModel level")
         ipv4_addresses = {}
         
         for group in self.groups:
             for device in group.devices:
                 if device.name == 'WCR01.FL':
-                    print(f"Found device {device.name}")
                     if device.vars and device.vars.bundle_interfaces:
                         for bundle in device.vars.bundle_interfaces:
                             if bundle.ipv4_address:
                                 ip_str = str(bundle.ipv4_address.ip)
-                                print(f"Found IP {ip_str} on {device.name} Bundle-Ether{bundle.bundle_id}")
                                 if ip_str in ipv4_addresses:
                                     existing = ipv4_addresses[ip_str]
                                     error_msg = f"Duplicate IP {ip_str} found on {existing[0]} and {device.name} Bundle-Ether{bundle.bundle_id}"
-                                    print(f"ERROR: {error_msg}")
                                     raise ValueError(error_msg)
                                 ipv4_addresses[ip_str] = (device.name, bundle.bundle_id)
         
